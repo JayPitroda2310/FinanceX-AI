@@ -313,6 +313,10 @@ function getApiErrorMessage(status, data) {
     return "Server request was blocked. Verify the OpenRouter key and deployment settings.";
   }
 
+  if (status === 404) {
+    return "Chat API route was not found. On local setup, start the app with server.py instead of opening static files only.";
+  }
+
   if (status === 429) {
     return "Rate limit reached. Please wait a moment and try again.";
   }

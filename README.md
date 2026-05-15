@@ -13,4 +13,10 @@ The environment variable must be added in:
 
 ## Local note
 
-The frontend now calls `/api/chat`, which is served by Vercel in production. A plain static file server will not provide that API route.
+The frontend now calls `/api/chat`, which is served by Vercel in production.
+
+For local testing:
+
+1. Create `.env.local`
+2. Add `OPENROUTER_API_KEY=your_openrouter_api_key_here`
+3. Run `py server.py`
