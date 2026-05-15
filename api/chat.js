@@ -6,7 +6,7 @@ const FALLBACK_MODELS = [
   "openai/gpt-oss-120b:free"
 ];
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: { message: "Method not allowed." } });
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
       }
     });
   }
-}
+};
 
 function parseJson(rawBody) {
   try {
