@@ -49,6 +49,12 @@ class FinanceAIHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, directory=None, **kwargs):
         super().__init__(*args, directory=directory, **kwargs)
 
+    def do_OPTIONS(self) -> None:
+        self.send_response(204)
+        self.send_cors_headers()
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_POST(self) -> None:
         if self.path != "/api/chat":
             self.send_json(404, {"error": {"message": "API route not found."}})
@@ -113,10 +119,18 @@ class FinanceAIHandler(SimpleHTTPRequestHandler):
     def send_json(self, status: int, payload: dict) -> None:
         encoded = json.dumps(payload).encode("utf-8")
         self.send_response(status)
+        self.send_cors_headers()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(encoded)))
         self.end_headers()
         self.wfile.write(encoded)
+
+    def send_cors_headers(self) -> None:
+        origin = self.headers.get("Origin")
+        allow_origin = origin if origin else "*"
+        self.send_header("Access-Control-Allow-Origin", allow_origin)
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
 
 def parse_json(raw_body: str) -> dict:

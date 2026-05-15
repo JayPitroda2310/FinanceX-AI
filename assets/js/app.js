@@ -52,8 +52,6 @@ Style rules:
 - Default to Indian Rupee (Rs) - user is in Vadodara, Gujarat, India
 - Skip the disclaimer unless specifically about personal investment decisions.`;
 
-const API_URL = "/api/chat";
-
 const state = {
   history: [],
   busy: false
@@ -67,6 +65,7 @@ const tickerEl = document.getElementById("tkr");
 const clearChatBtn = document.getElementById("clear-chat-btn");
 const quickQuestionButtons = document.querySelectorAll("[data-question]");
 let deferredInstallPrompt = null;
+const API_CANDIDATES = buildApiCandidates();
 
 init();
 
@@ -204,17 +203,11 @@ async function send() {
   sendBtnEl.disabled = true;
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: SYS },
-          ...state.history
-        ]
-      })
+    const response = await postChatRequest({
+      messages: [
+        { role: "system", content: SYS },
+        ...state.history
+      ]
     });
 
     const rawBody = await response.text();
@@ -326,6 +319,62 @@ function getApiErrorMessage(status, data) {
   }
 
   return `API error ${status}.`;
+}
+
+async function postChatRequest(payload) {
+  let lastResponse = null;
+  let lastError = null;
+
+  for (const apiUrl of API_CANDIDATES) {
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.status !== 404 || apiUrl === API_CANDIDATES[API_CANDIDATES.length - 1]) {
+        return response;
+      }
+
+      lastResponse = response;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (lastResponse) {
+    return lastResponse;
+  }
+
+  throw lastError || new Error("No API endpoint was reachable.");
+}
+
+function buildApiCandidates() {
+  const candidates = [];
+  const { protocol, hostname, port, origin } = window.location;
+  const isFileProtocol = protocol === "file:";
+  const isLocalHost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1";
+
+  if (!isFileProtocol) {
+    candidates.push(`${origin}/api/chat`);
+  }
+
+  if (isFileProtocol || isLocalHost) {
+    candidates.push("http://127.0.0.1:8000/api/chat");
+    candidates.push("http://localhost:8000/api/chat");
+  }
+
+  if (hostname && !isFileProtocol && port !== "8000") {
+    candidates.push(`${protocol}//${hostname}:8000/api/chat`);
+  }
+
+  return [...new Set(candidates)];
 }
 
 function addMsg(role, text) {
