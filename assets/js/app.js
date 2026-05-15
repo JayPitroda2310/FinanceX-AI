@@ -52,7 +52,7 @@ Style rules:
 - Default to Indian Rupee (Rs) - user is in Vadodara, Gujarat, India
 - Skip the disclaimer unless specifically about personal investment decisions.`;
 
-const API_URL = "/api/chat";
+const API_URLS = ["/api/chat", "/api/chat/", "/api/chat/index.js"];
 
 const state = {
   history: [],
@@ -204,17 +204,11 @@ async function send() {
   sendBtnEl.disabled = true;
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: SYS },
-          ...state.history
-        ]
-      })
+    const response = await requestChatCompletion({
+      messages: [
+        { role: "system", content: SYS },
+        ...state.history
+      ]
     });
 
     const rawBody = await response.text();
@@ -246,6 +240,28 @@ function parseJson(rawBody) {
   } catch {
     return {};
   }
+}
+
+async function requestChatCompletion(payload) {
+  let lastResponse = null;
+
+  for (const url of API_URLS) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.status !== 404) {
+      return response;
+    }
+
+    lastResponse = response;
+  }
+
+  return lastResponse;
 }
 
 function getReplyText(data) {
