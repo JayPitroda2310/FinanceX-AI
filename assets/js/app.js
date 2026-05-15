@@ -1,4 +1,4 @@
-const tickerData = [
+const fallbackTickerData = [
   { s: "NIFTY 50", v: "24,832", c: "+0.42%", u: 1 },
   { s: "SENSEX", v: "81,640", c: "+0.38%", u: 1 },
   { s: "BTC/USD", v: "$103,420", c: "+2.1%", u: 1 },
@@ -66,6 +66,7 @@ const clearChatBtn = document.getElementById("clear-chat-btn");
 const quickQuestionButtons = document.querySelectorAll("[data-question]");
 let deferredInstallPrompt = null;
 const API_CANDIDATES = buildApiCandidates();
+const TICKER_API_CANDIDATES = buildTickerApiCandidates();
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_MODEL_ID = "openrouter/auto";
 const OPENROUTER_FALLBACK_MODELS = [];
@@ -73,7 +74,8 @@ const OPENROUTER_FALLBACK_MODELS = [];
 init();
 
 function init() {
-  renderTicker();
+  renderTicker(fallbackTickerData);
+  loadTicker();
   renderWelcome();
   setupPwaSupport();
 
@@ -152,13 +154,51 @@ async function promptInstall() {
   errorEl.style.cursor = "default";
 }
 
-function renderTicker() {
-  tickerEl.innerHTML = [...tickerData, ...tickerData]
+function renderTicker(items) {
+  tickerEl.innerHTML = [...items, ...items]
     .map(
       (item) =>
         `<span class="ti"><span class="ts">${item.s}</span><span class="tv">${item.v}</span><span class="${item.u ? "tu" : "td"}">${item.c}</span><span class="tp">|</span></span>`
     )
     .join("");
+}
+
+async function loadTicker() {
+  try {
+    const response = await fetchTickerData();
+    const data = parseJson(await response.text());
+
+    if (!response.ok || !Array.isArray(data.items) || !data.items.length) {
+      return;
+    }
+
+    renderTicker(data.items);
+    window.setTimeout(loadTicker, 120000);
+  } catch {
+    window.setTimeout(loadTicker, 120000);
+  }
+}
+
+async function fetchTickerData() {
+  let lastError = null;
+
+  for (const apiUrl of TICKER_API_CANDIDATES) {
+    try {
+      const response = await fetch(apiUrl, {
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (response.ok || response.status !== 404) {
+        return response;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("No ticker endpoint was reachable.");
 }
 
 function renderWelcome() {
@@ -474,6 +514,31 @@ function buildApiCandidates() {
 
   if (hostname && !isFileProtocol && port !== "8000") {
     candidates.push(`${protocol}//${hostname}:8000/api/chat`);
+  }
+
+  return [...new Set(candidates)];
+}
+
+function buildTickerApiCandidates() {
+  const candidates = [];
+  const { protocol, hostname, port, origin } = window.location;
+  const isFileProtocol = protocol === "file:";
+  const isLocalHost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1";
+
+  if (!isFileProtocol) {
+    candidates.push(`${origin}/api/market-ticker`);
+  }
+
+  if (isFileProtocol || isLocalHost) {
+    candidates.push("http://127.0.0.1:8000/api/market-ticker");
+    candidates.push("http://localhost:8000/api/market-ticker");
+  }
+
+  if (hostname && !isFileProtocol && port !== "8000") {
+    candidates.push(`${protocol}//${hostname}:8000/api/market-ticker`);
   }
 
   return [...new Set(candidates)];

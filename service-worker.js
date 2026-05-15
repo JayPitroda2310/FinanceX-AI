@@ -1,4 +1,4 @@
-const CACHE_NAME = "financeai-v2";
+const CACHE_NAME = "financeai-v3";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -32,6 +32,11 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
+    return;
+  }
+
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.pathname.startsWith("/api/")) {
     return;
   }
 
