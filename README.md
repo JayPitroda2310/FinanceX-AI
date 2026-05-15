@@ -20,3 +20,4 @@ For local testing:
 1. Create `.env.local`
 2. Add `OPENROUTER_API_KEY=your_openrouter_api_key_here`
 3. Run `py server.py`
+4. For Vercel, redeploy after pushing so `/api/chat` is rebuilt from `api/chat/index.js`

@@ -1,9 +1,25 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
+  "version": 2,
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs22.x"
+    }
+  },
+  "routes": [
     {
-      "source": "/",
-      "destination": "/index.html"
+      "src": "^/api/chat/?$",
+      "dest": "/api/chat/index.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "^(?:/)?$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "^(?!/api/).*$",
+      "dest": "/index.html"
     }
   ]
 }
