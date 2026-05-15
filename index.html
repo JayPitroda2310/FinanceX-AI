@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FinanceAI</title>
+<meta name="theme-color" content="#0a0a0a"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FinanceAI"/>
+<meta name="application-name" content="FinanceAI"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="icon" href="assets/icons/icon-192.png" sizes="192x192"/>
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="assets/css/styles.css"/>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">FX</div>
+    <div class="logo-text">Finance<span>.AI</span></div>
+  </div>
+</header>
+
+<div class="ticker"><div class="ttrack" id="tkr"></div></div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="stitle">Quick Topics</div>
+    <button class="tbtn" data-question="What are the best long-term investment strategies for a beginner in India?"><span class="ic">📈</span>Investing Basics</button>
+    <button class="tbtn" data-question="Explain how the Indian stock market works - NSE, BSE, SEBI, Nifty, Sensex."><span class="ic">🏦</span>Stock Market</button>
+    <button class="tbtn" data-question="How do I build a monthly budget and manage personal finances effectively?"><span class="ic">💰</span>Personal Finance</button>
+    <button class="tbtn" data-question="What is SIP and how does it compare to lump sum investing in mutual funds?"><span class="ic">🔁</span>SIP vs Lump Sum</button>
+    <button class="tbtn" data-question="Explain different types of mutual funds and how to choose the right one."><span class="ic">🧩</span>Mutual Funds</button>
+    <button class="tbtn" data-question="What are ETFs and how are they different from mutual funds in India?"><span class="ic">📉</span>ETFs</button>
+    <button class="tbtn" data-question="What is cryptocurrency and how does blockchain technology work?"><span class="ic">₿</span>Crypto &amp; Web3</button>
+    <button class="tbtn" data-question="How do I calculate compound interest? Explain Rule of 72 with examples."><span class="ic">📊</span>Compound Interest</button>
+    <button class="tbtn" data-question="How does inflation affect savings and what should I invest in to beat inflation?"><span class="ic">🌡️</span>Inflation</button>
+    <button class="tbtn" data-question="Explain options trading - calls, puts, and basic strategies for beginners."><span class="ic">🔧</span>Options Trading</button>
+    <button class="tbtn" data-question="What are tax-saving investment options under Section 80C in India?"><span class="ic">🧾</span>Tax Planning 80C</button>
+    <button class="tbtn" data-question="How should I plan for retirement in India? Cover NPS, PPF, EPF options."><span class="ic">🏖️</span>Retirement</button>
+    <button class="tbtn" data-question="What is portfolio diversification and how do I manage investment risk?"><span class="ic">⚖️</span>Risk Management</button>
+    <button class="tbtn" data-question="Explain LTCG and STCG tax on stocks and mutual funds in India 2024-25."><span class="ic">📋</span>Capital Gains Tax</button>
+    <div class="stitle actions-title">Actions</div>
+    <button class="tbtn" id="clear-chat-btn"><span class="ic">🗑️</span>Clear Chat</button>
+  </aside>
+
+  <div class="chat-wrap">
+    <div class="messages" id="msgs"></div>
+
+    <div class="input-area">
+      <div class="input-box">
+        <textarea
+          id="msg"
+          rows="1"
+          placeholder="// enter query - stocks, crypto, tax, SIP, budget..."
+        ></textarea>
+        <button class="sendbtn" id="sendbtn" title="Send (Enter)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="ifooter">
+        <span class="disc">&#9888; Educational only - not personalised financial advice</span>
+      </div>
+      <div id="errbar" class="errbar"></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>
