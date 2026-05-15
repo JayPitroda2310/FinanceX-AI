@@ -12,12 +12,8 @@ HOST = "127.0.0.1"
 PORT = 8000
 APP_FILE = "index.html"
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL_ID = "openrouter/free"
-FALLBACK_MODELS = [
-    "openrouter/free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "openai/gpt-oss-120b:free",
-]
+MODEL_ID = "openrouter/auto"
+FALLBACK_MODELS = []
 
 
 def load_env_file(root: Path) -> None:
@@ -110,10 +106,15 @@ class FinanceAIHandler(SimpleHTTPRequestHandler):
         except urllib.error.HTTPError as error:
             raw_response = error.read().decode("utf-8")
             self.send_json(error.code, parse_json(raw_response))
-        except urllib.error.URLError:
+        except urllib.error.URLError as error:
             self.send_json(
                 500,
-                {"error": {"message": "Server request to OpenRouter failed."}},
+                {"error": {"message": f"Server request to OpenRouter failed: {error.reason}"}},
+            )
+        except Exception as error:
+            self.send_json(
+                500,
+                {"error": {"message": f"Unexpected server error: {error}"}},
             )
 
     def send_json(self, status: int, payload: dict) -> None:

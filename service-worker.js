@@ -1,10 +1,11 @@
-const CACHE_NAME = "financeai-v1";
+const CACHE_NAME = "financeai-v2";
 const APP_ASSETS = [
   "./",
   "./index.html",
   "./finance-ai-chatbot.html",
   "./manifest.webmanifest",
   "./assets/css/styles.css",
+  "./assets/js/local-config.js",
   "./assets/js/app.js",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png"

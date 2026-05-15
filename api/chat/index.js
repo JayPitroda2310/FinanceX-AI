@@ -1,10 +1,6 @@
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL_ID = "openrouter/free";
-const FALLBACK_MODELS = [
-  "openrouter/free",
-  "nvidia/nemotron-3-super-120b-a12b:free",
-  "openai/gpt-oss-120b:free"
-];
+const MODEL_ID = "openrouter/auto";
+const FALLBACK_MODELS = [];
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {

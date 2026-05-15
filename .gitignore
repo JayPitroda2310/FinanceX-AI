@@ -2,3 +2,4 @@
 __pycache__/
 .env
 .env.local
+assets/js/local-config.js

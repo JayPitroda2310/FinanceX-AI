@@ -66,6 +66,9 @@ const clearChatBtn = document.getElementById("clear-chat-btn");
 const quickQuestionButtons = document.querySelectorAll("[data-question]");
 let deferredInstallPrompt = null;
 const API_CANDIDATES = buildApiCandidates();
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_MODEL_ID = "openrouter/auto";
+const OPENROUTER_FALLBACK_MODELS = [];
 
 init();
 
@@ -203,18 +206,23 @@ async function send() {
   sendBtnEl.disabled = true;
 
   try {
-    const response = await postChatRequest({
+    const payload = {
       messages: [
         { role: "system", content: SYS },
         ...state.history
       ]
-    });
+    };
+    const response = await postChatRequest(payload);
 
     const rawBody = await response.text();
     const data = parseJson(rawBody);
     typingEl.remove();
 
     if (!response.ok) {
+      if (isDirectKeyError(response.status, data)) {
+        clearStoredOpenRouterKey();
+      }
+
       showErr(getApiErrorMessage(response.status, data));
       state.history.pop();
     } else {
@@ -224,7 +232,7 @@ async function send() {
     }
   } catch (error) {
     typingEl.remove();
-    showErr("Request failed. Check your internet connection or server deployment.");
+    showErr(getRequestFailureMessage(error));
     state.history.pop();
   }
 
@@ -307,7 +315,7 @@ function getApiErrorMessage(status, data) {
   }
 
   if (status === 404) {
-    return "Chat API route was not found. On local setup, start the app with server.py instead of opening static files only.";
+    return "Chat API route was not found. FinanceAI can still work through the browser fallback after you enter a valid OpenRouter API key.";
   }
 
   if (status === 429) {
@@ -335,6 +343,10 @@ async function postChatRequest(payload) {
         body: JSON.stringify(payload)
       });
 
+      if (shouldUseBrowserFallback(response)) {
+        return postDirectToOpenRouter(payload);
+      }
+
       if (response.status !== 404 || apiUrl === API_CANDIDATES[API_CANDIDATES.length - 1]) {
         return response;
       }
@@ -345,11 +357,101 @@ async function postChatRequest(payload) {
     }
   }
 
+  const storedKey = getStoredOpenRouterKey(false);
+  if (storedKey) {
+    return postDirectToOpenRouter(payload, storedKey);
+  }
+
   if (lastResponse) {
     return lastResponse;
   }
 
   throw lastError || new Error("No API endpoint was reachable.");
+}
+
+function shouldUseBrowserFallback(response) {
+  return response.status === 404 || response.status === 500 || response.status === 502 || response.status === 503;
+}
+
+async function postDirectToOpenRouter(payload, apiKey = getStoredOpenRouterKey(true)) {
+  if (!apiKey) {
+    throw new Error("missing-browser-openrouter-key");
+  }
+
+  return fetch(OPENROUTER_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": window.location.href,
+      "X-Title": "FinanceAI"
+    },
+    body: JSON.stringify({
+      model: OPENROUTER_MODEL_ID,
+      models: OPENROUTER_FALLBACK_MODELS,
+      max_tokens: 400,
+      temperature: 0.4,
+      provider: {
+        allow_fallbacks: true
+      },
+      messages: payload.messages
+    })
+  });
+}
+
+function getStoredOpenRouterKey(allowPrompt) {
+  try {
+    const configuredKey = window.FINANCEAI_CONFIG?.openRouterApiKey;
+    if (configuredKey && configuredKey.trim()) {
+      const normalizedConfiguredKey = configuredKey.trim();
+      window.localStorage.setItem("financeai_openrouter_api_key", normalizedConfiguredKey);
+      return normalizedConfiguredKey;
+    }
+
+    const savedKey = window.localStorage.getItem("financeai_openrouter_api_key");
+    if (savedKey && savedKey.trim()) {
+      return savedKey.trim();
+    }
+
+    if (!allowPrompt) {
+      return "";
+    }
+
+    const enteredKey = window.prompt(
+      "Enter your OpenRouter API key to enable FinanceAI chat in this browser. It will be stored locally on this device."
+    );
+
+    if (!enteredKey || !enteredKey.trim()) {
+      return "";
+    }
+
+    const normalizedKey = enteredKey.trim();
+    window.localStorage.setItem("financeai_openrouter_api_key", normalizedKey);
+    return normalizedKey;
+  } catch {
+    return "";
+  }
+}
+
+function clearStoredOpenRouterKey() {
+  try {
+    window.localStorage.removeItem("financeai_openrouter_api_key");
+  } catch {
+    // Ignore storage failures and let the user retry.
+  }
+}
+
+function isDirectKeyError(status, data) {
+  const rawMessage = `${data?.error?.message || data?.message || ""}`.toLowerCase();
+  return status === 401 || status === 403 || rawMessage.includes("api key") || rawMessage.includes("authorization");
+}
+
+function getRequestFailureMessage(error) {
+  if (error?.message === "missing-browser-openrouter-key") {
+    return "Chat could not start because no OpenRouter API key was provided. Enter a valid key in the prompt and try again.";
+  }
+
+  return "Request failed. Check your internet connection, browser key, or server deployment.";
 }
 
 function buildApiCandidates() {
