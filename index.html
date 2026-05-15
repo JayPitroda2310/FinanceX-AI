@@ -70,7 +70,24 @@
   </div>
 </div>
 
-<script src="assets/js/local-config.js"></script>
+<script>
+  (function loadLocalConfig() {
+    const host = window.location.hostname;
+    const isLocalHost =
+      window.location.protocol === "file:" ||
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "::1";
+
+    if (!isLocalHost) {
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "assets/js/local-config.js";
+    document.head.appendChild(script);
+  })();
+</script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

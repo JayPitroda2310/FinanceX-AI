@@ -18,6 +18,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const requestBody = await getRequestBody(req);
     const upstreamResponse = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -33,7 +34,7 @@ module.exports = async function handler(req, res) {
         provider: {
           allow_fallbacks: true
         },
-        messages: req.body?.messages || []
+        messages: requestBody.messages || []
       })
     });
 
@@ -43,11 +44,30 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({
       error: {
-        message: "Server request to OpenRouter failed."
+        message: `Server request to OpenRouter failed: ${error.message || "unknown error"}`
       }
     });
   }
 };
+
+async function getRequestBody(req) {
+  if (req.body && typeof req.body === "object") {
+    return req.body;
+  }
+
+  if (typeof req.body === "string") {
+    return parseJson(req.body);
+  }
+
+  const chunks = [];
+
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+
+  const rawBody = Buffer.concat(chunks).toString("utf-8");
+  return parseJson(rawBody);
+}
 
 function parseJson(rawBody) {
   try {
