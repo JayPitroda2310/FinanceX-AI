@@ -14,7 +14,11 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: { message: "Missing OPENROUTER_API_KEY on the server." } });
+    return res.status(500).json({
+      error: {
+        message: "Missing OPENROUTER_API_KEY on the server. Add it in Vercel Project Settings > Environment Variables, then redeploy."
+      }
+    });
   }
 
   try {

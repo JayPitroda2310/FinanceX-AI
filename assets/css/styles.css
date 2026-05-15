@@ -133,8 +133,18 @@ header{flex-shrink:0;position:relative;z-index:20;display:flex;align-items:cente
   padding:7px 11px;font-size:11.5px;margin-top:5px;display:none;font-family:'DM Mono',monospace}
 @media (max-width: 900px){
   .sidebar{display:none}
-  .messages{padding:18px 16px 10px}
-  .input-area{padding:10px 12px 12px}
+  .chat-wrap{position:relative}
+  .messages{padding:18px 16px 120px}
+  .input-area{
+    position:sticky;
+    bottom:0;
+    left:0;
+    right:0;
+    padding:10px 12px 12px;
+    background:rgba(255,255,255,.96);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+  }
   .bubble{max-width:88%}
   .qgrid{grid-template-columns:1fr}
 }

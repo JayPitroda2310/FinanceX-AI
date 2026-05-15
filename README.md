@@ -6,7 +6,10 @@ FinanceAI is a static chat-style finance web app prepared for Vercel deployment.
 
 1. Import this GitHub repo into Vercel.
 2. Add an environment variable named `OPENROUTER_API_KEY`.
-3. Deploy.
+3. Redeploy after saving the variable.
+
+The environment variable must be added in:
+`Vercel Dashboard -> Project -> Settings -> Environment Variables`
 
 ## Local note
 

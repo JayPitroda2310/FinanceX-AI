@@ -249,16 +249,40 @@ function parseJson(rawBody) {
 }
 
 function getReplyText(data) {
-  const content = data.choices?.[0]?.message?.content;
+  const firstChoice = data.choices?.[0];
+  const messageContent = firstChoice?.message?.content;
+  const directText =
+    firstChoice?.text ||
+    data.reply ||
+    data.output_text ||
+    data.response?.output_text ||
+    data.message?.content;
 
-  if (typeof content === "string" && content.trim()) {
-    return content;
+  if (typeof messageContent === "string" && messageContent.trim()) {
+    return messageContent;
   }
 
-  if (Array.isArray(content)) {
-    const text = content
-      .filter((item) => item?.type === "text" && typeof item.text === "string")
-      .map((item) => item.text)
+  if (typeof directText === "string" && directText.trim()) {
+    return directText;
+  }
+
+  if (Array.isArray(messageContent)) {
+    const text = messageContent
+      .map((item) => {
+        if (typeof item === "string") {
+          return item;
+        }
+
+        if (typeof item?.text === "string") {
+          return item.text;
+        }
+
+        if (typeof item?.content === "string") {
+          return item.content;
+        }
+
+        return "";
+      })
       .join("\n")
       .trim();
 
@@ -267,7 +291,7 @@ function getReplyText(data) {
     }
   }
 
-  return "No response.";
+  return "I did not receive readable text from the model. Please try again.";
 }
 
 function getApiErrorMessage(status, data) {
